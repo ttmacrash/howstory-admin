@@ -130,7 +130,9 @@
   .rv .rstars { display: flex; gap: 2px; margin-top: 6px; }
   .rv .rstars button { background: transparent; border: 0; padding: 0 2px; font-size: 20px; line-height: 1; cursor: pointer; color: var(--line); }
   .rv .rstars button.on { color: var(--accent); }
-  .rv .media .mi { position: relative; }
+  .rv .media .mi { position: relative; width: 44px; height: 44px; background: var(--bg-3); overflow: visible; }
+  .rv .media .mi img { width: 44px; height: 44px; object-fit: cover; display: block; }
+  .rv .media .mi > span { width: 44px; height: 44px; }
   .rv .media .mi button { position: absolute; top: -4px; right: -4px; width: 18px; height: 18px; border: 0; border-radius: 50%; background: var(--bad); color: #fff; font-size: 12px; line-height: 18px; padding: 0; cursor: pointer; }
   .rv .hint { font-size: 11px; color: var(--ink-3); margin-top: 4px; }
   .lnk { display: inline-flex; align-items: center; justify-content: center; gap: 5px; width: 100%; margin-top: 6px; background: var(--accent-soft); border: 1px solid var(--accent); padding: 7px 8px; font-size: 12px; font-weight: 700; color: var(--ink); cursor: pointer; }
