@@ -115,6 +115,18 @@
   textarea.note { width: 100%; min-height: 56px; padding: 7px 8px; border: 1px solid var(--line); background: var(--bg); resize: vertical; border-radius: 0; font-size: 13px; }
   .saved { font-size: 11px; color: var(--ok); margin-top: 4px; height: 14px; }
   .rowfoot { display: flex; justify-content: flex-end; }
+  .rv { margin-top: 8px; padding: 8px 10px; background: var(--bg); border: 1px solid var(--line); font-size: 12px; }
+  .rv .st { font-weight: 700; }
+  .rv .st.wait { color: var(--warn); }
+  .rv .st.live { color: var(--ok); }
+  .rv .stars { color: var(--accent); letter-spacing: 1px; }
+  .rv .body { margin-top: 4px; color: var(--ink-2); white-space: pre-wrap; }
+  .rv .media { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .rv .media a, .rv .media span { display: block; width: 44px; height: 44px; background: var(--bg-3); overflow: hidden; }
+  .rv .media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rv .media span { display: grid; place-items: center; font-size: 10px; font-weight: 700; color: var(--ink-2); }
+  .rv .acts { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .lnk { display: inline-flex; align-items: center; justify-content: center; gap: 5px; width: 100%; margin-top: 6px; background: var(--accent-soft); border: 1px solid var(--accent); padding: 7px 8px; font-size: 12px; font-weight: 700; color: var(--ink); cursor: pointer; }
   .del { display: inline-flex; align-items: center; gap: 5px; width: 100%; justify-content: center; margin-top: 6px; background: transparent; border: 1px solid var(--line); padding: 7px 8px; font-size: 12px; font-weight: 700; color: var(--ink-2); cursor: pointer; }
   .del:hover, .del:focus-visible { border-color: var(--bad); color: var(--bad); background: var(--bad-soft); }
   .del svg { width: 13px; height: 13px; }
@@ -498,7 +510,9 @@
   }
 
   // ---- data ----
+  var reviews = {};
   function load() {
+    sb.from('reviews').select('*').then(function (rv) { reviews = {}; (rv.data || []).forEach(function (v) { reviews[v.request_id] = v; }); render(); });
     sb.from('requests').select('*').order('created_at', { ascending: false }).limit(5000).then(function (r) {
       if (r.error) { toast('불러오기 실패: ' + r.error.message); return; }
       all = r.data || [];
@@ -544,12 +558,47 @@
         '<div><span class="pill' + (x.status === 'new' ? ' new' : '') + '">' + esc(x.purpose || '-') + '</span>' + (x.budget ? '<span class="pill num">' + esc(x.budget) + '만원</span>' : '') + '</div>' +
         '<div><select class="status ' + esc(x.status) + '" data-act="status">' + opts + '</select><button type="button" class="del" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>삭제</button></div>' +
         '<div class="note-wrap"><textarea class="note" data-act="note" placeholder="연락한 내용, 견적 금액 등">' + esc(x.note || '') + '</textarea><div class="saved"></div></div>' +
-        '<div class="m">' + esc(x.memo || '') + '</div>' +
+        '<div class="m">' + esc(x.memo || '') + reviewBlock(x) + '</div>' +
       '</div>';
     }).join('');
   }
 
   window.HOWSTORY_ADMIN.setRows = function (rows) { all = rows; render(); };
+  function mediaUrl(path) { return cfg.SUPABASE_URL.replace(/\/$/, '') + '/storage/v1/object/public/reviews/' + path; }
+  function reviewBlock(x) {
+    if (x.status !== 'done') return '';
+    var v = reviews[x.id]; var link = 'https://shortply.co.kr/review/?t=' + x.review_token;
+    var h = '<button type="button" class="lnk" data-act="copylink" data-link="' + esc(link) + '">후기 링크 복사</button>';
+    if (!v) return h + '<div class="rv"><span class="st">후기 아직 없음</span> · 링크를 손님에게 보내 주세요</div>';
+    var stars = '★★★★★'.slice(0, v.rating) + '☆☆☆☆☆'.slice(0, 5 - v.rating);
+    var media = (v.media || []).map(function (m) { return m.type === 'video' ? '<a href="' + esc(mediaUrl(m.path)) + '" target="_blank" rel="noopener"><span>영상</span></a>' : '<a href="' + esc(mediaUrl(m.path)) + '" target="_blank" rel="noopener"><img src="' + esc(mediaUrl(m.path)) + '" alt=""></a>'; }).join('');
+    return h + '<div class="rv" data-rid="' + v.id + '">' +
+      '<span class="st ' + (v.approved ? 'live' : 'wait') + '">' + (v.approved ? '사이트에 게시 중' : '후기 도착 · 승인 대기') + '</span> <span class="stars">' + stars + '</span>' +
+      '<div class="body">' + esc(v.body) + '</div>' + (media ? '<div class="media">' + media + '</div>' : '') +
+      '<div class="acts">' + (v.approved ? '<button type="button" class="btn line sm" data-act="unapprove">게시 내리기</button>' : '<button type="button" class="btn sm" data-act="approve">승인해서 사이트에 올리기</button>') + '</div>' +
+    '</div>';
+  }
+  $('rows').addEventListener('click', function (e) {
+    var cp = e.target.closest('[data-act="copylink"]');
+    if (cp) {
+      var link = cp.dataset.link;
+      var done = function () { toast('후기 링크를 복사했어요. 손님에게 보내 주세요.'); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(done, function () { window.prompt('링크를 복사하세요', link); });
+      else window.prompt('링크를 복사하세요', link);
+      return;
+    }
+    var ap = e.target.closest('[data-act="approve"],[data-act="unapprove"]');
+    if (ap) {
+      if (!isAdmin) { toast('관리자만 할 수 있어요'); return; }
+      var rid = ap.closest('.rv').dataset.rid; var to = ap.dataset.act === 'approve';
+      ap.disabled = true;
+      sb.from('reviews').update({ approved: to }).eq('id', rid).then(function (r) {
+        if (r.error) { ap.disabled = false; toast('저장 실패'); return; }
+        Object.keys(reviews).forEach(function (k) { if (reviews[k].id === rid) reviews[k].approved = to; });
+        toast(to ? '사이트에 올렸어요' : '사이트에서 내렸어요'); render();
+      });
+    }
+  });
 
   // ---- edit ----
   $('rows').addEventListener('change', function (e) {
