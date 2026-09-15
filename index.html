@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>하우스토리 어드민</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23151A24'/%3E%3Cpath d='M14 50V28L32 16l18 12v22' fill='none' stroke='%23E9A23B' stroke-width='4' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+  :root {
+    --bg: #F4F5F7; --surface: #FFFFFF; --bg-3: #EAECEF;
+    --ink: #0F1115; --ink-2: #555C66; --ink-3: #9AA1AB;
+    --line: #E2E5EA; --line-2: #0F1115;
+    --btn: #0F1115; --btn-ink: #FFFFFF;
+    --accent: #E9A23B; --accent-ink: #1A1A1A; --accent-soft: #FBF1DF;
+    --ok: #1E7F52; --ok-soft: #DDF2E6; --warn: #B45309; --warn-soft: #FDEBD3; --bad: #B91C1C; --bad-soft: #FDE2E2;
+    --dot: rgba(0,0,0,.14);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #151A24; --surface: #1C2230; --bg-3: #252C3B;
+      --ink: #F4F2EC; --ink-2: #C3C8D2; --ink-3: #8B92A0;
+      --line: #2C3444; --line-2: #F4F2EC;
+      --btn: #F2B44C; --btn-ink: #151A24;
+      --accent: #F2B44C; --accent-ink: #151A24; --accent-soft: #2E2A22;
+      --ok: #5BCB8E; --ok-soft: #173327; --warn: #E9A94E; --warn-soft: #3A2A10; --bad: #F87171; --bad-soft: #3A1A1A;
+      --dot: rgba(255,255,255,.16);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #151A24; --surface: #1C2230; --bg-3: #252C3B;
+    --ink: #F4F2EC; --ink-2: #C3C8D2; --ink-3: #8B92A0;
+    --line: #2C3444; --line-2: #F4F2EC;
+    --btn: #F2B44C; --btn-ink: #151A24;
+    --accent: #F2B44C; --accent-ink: #151A24; --accent-soft: #2E2A22;
+    --ok: #5BCB8E; --ok-soft: #173327; --warn: #E9A94E; --warn-soft: #3A2A10; --bad: #F87171; --bad-soft: #3A1A1A;
+    --dot: rgba(255,255,255,.16);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: Pretendard, "Pretendard Variable", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif; font-size: 14px; line-height: 1.55; letter-spacing: -0.01em; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .num { font-variant-numeric: tabular-nums; }
+  [hidden] { display: none !important; }
+
+  /* top bar */
+  .top { position: sticky; top: 0; z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .top .in { max-width: 1240px; margin: 0 auto; padding-inline: 20px; height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 900; font-size: 17px; letter-spacing: -0.03em; text-decoration: none; }
+  .brand svg { width: 26px; height: auto; color: var(--accent); }
+  .brand small { font-weight: 500; font-size: 11px; letter-spacing: .2em; color: var(--ink-3); }
+  .brand .tag { font-size: 11px; font-weight: 700; padding: 2px 6px; background: var(--accent); color: var(--accent-ink); margin-left: 4px; letter-spacing: 0; }
+  .who { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--ink-2); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; padding: 9px 14px; font-weight: 700; font-size: 13px; cursor: pointer; background: var(--btn); color: var(--btn-ink); }
+  .btn.line { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  .btn.sm { padding: 6px 10px; font-size: 12px; }
+  .btn:disabled { opacity: .5; cursor: default; }
+
+  /* login */
+  .login { min-height: calc(100vh - 56px); display: grid; place-items: center; padding: 24px 20px; background-image: radial-gradient(var(--dot) 1px, transparent 1.2px); background-size: 22px 22px; }
+  .login .card { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--line); padding: 28px; }
+  .login h1 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: -0.03em; }
+  .login p { margin: 6px 0 0; font-size: 13px; color: var(--ink-3); }
+  .f { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
+  .f label { font-size: 12px; font-weight: 700; color: var(--ink-2); }
+  .f input { padding: 11px 12px; border: 1px solid var(--line); background: var(--bg); border-radius: 0; }
+  .f input:focus { border-color: var(--ink); outline: none; }
+  .login .btn { width: 100%; margin-top: 18px; padding: 12px; }
+  .err { margin-top: 12px; font-size: 13px; color: var(--bad); }
+  .setup { max-width: 640px; margin: 40px auto; background: var(--surface); border: 1px solid var(--line); padding: 24px; }
+  .setup h2 { margin: 0 0 8px; font-size: 16px; }
+  .setup ol { margin: 8px 0 0; padding-left: 20px; color: var(--ink-2); }
+  .setup code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; background: var(--bg-3); padding: 1px 5px; }
+
+  /* dashboard */
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 20px; }
+  .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .stat { background: var(--surface); border: 1px solid var(--line); padding: 14px 16px; cursor: pointer; text-align: left; }
+  .stat[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 -3px 0 var(--accent); }
+  .stat b { display: block; font-size: 24px; font-weight: 900; letter-spacing: -0.03em; line-height: 1.1; }
+  .stat span { font-size: 12px; color: var(--ink-2); }
+  .tools { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+  .tools input[type=search] { padding: 9px 12px; border: 1px solid var(--line); background: var(--surface); min-width: 260px; border-radius: 0; }
+  .tools .r { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--ink-3); }
+  .list { margin-top: 12px; background: var(--surface); border: 1px solid var(--line); }
+  .row { display: grid; grid-template-columns: 110px 1.2fr 1fr 150px 130px 1fr; gap: 12px; align-items: start; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  .row.head { font-size: 11px; font-weight: 700; color: var(--ink-3); letter-spacing: .06em; padding-block: 10px; background: var(--bg); }
+  .row:last-child { border-bottom: 0; }
+  .row .t { font-size: 12px; color: var(--ink-2); }
+  .row .t small { display: block; color: var(--ink-3); }
+  .row .n { font-weight: 700; }
+  .row .c { word-break: break-all; }
+  .row .c a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  .row .m { font-size: 13px; color: var(--ink-2); white-space: pre-wrap; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 7px; background: var(--bg-3); color: var(--ink-2); margin-right: 4px; }
+  .pill.new { background: var(--accent-soft); color: var(--warn); }
+  select.status { width: 100%; padding: 7px 8px; border: 1px solid var(--line); background: var(--bg); border-radius: 0; font-weight: 600; font-size: 13px; }
+  select.status.new { border-color: var(--accent); }
+  select.status.done { color: var(--ok); }
+  select.status.canceled { color: var(--ink-3); }
+  textarea.note { width: 100%; min-height: 56px; padding: 7px 8px; border: 1px solid var(--line); background: var(--bg); resize: vertical; border-radius: 0; font-size: 13px; }
+  .saved { font-size: 11px; color: var(--ok); margin-top: 4px; height: 14px; }
+  .empty { padding: 48px 16px; text-align: center; color: var(--ink-3); }
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--btn); color: var(--btn-ink); padding: 10px 16px; font-weight: 700; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  @media (max-width: 900px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .row { grid-template-columns: 1fr 1fr; }
+    .row.head { display: none; }
+    .row > * { min-width: 0; }
+    .row .m, .row .note-wrap { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="in">
+    <a class="brand" href="#">
+      <svg viewBox="0 0 64 44" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M8 40V18L32 4l24 14v22"/><circle cx="32" cy="4" r="3" fill="var(--surface)"/><circle cx="8" cy="40" r="3" fill="var(--surface)"/><circle cx="56" cy="40" r="3" fill="var(--surface)"/></svg>
+      하우스토리 <small>HOWS.TORY</small><span class="tag">ADMIN</span>
+    </a>
+    <div class="who" id="who" hidden><span id="whoName"></span><button class="btn line sm" id="logout">로그아웃</button></div>
+  </div>
+</header>
+
+<!-- 설정 안내: config.js 가 비어 있을 때 -->
+<section class="setup" id="setup" hidden>
+  <h2>아직 연결 전이에요</h2>
+  <p style="margin:0;color:var(--ink-2)">config.js 에 Supabase 주소와 anon 키를 넣으면 이 화면이 로그인 화면으로 바뀌어요.</p>
+  <ol>
+    <li>supabase.com 에서 무료 프로젝트 만들기</li>
+    <li>SQL Editor 에 <code>supabase/schema.sql</code> 내용 붙여넣고 실행</li>
+    <li>Authentication → Users → Add user 로 관리자 계정 만들기</li>
+    <li>Project Settings → API 의 URL 과 anon key 를 <code>config.js</code> 에 입력</li>
+  </ol>
+</section>
+
+<!-- 로그인 -->
+<section class="login" id="login" hidden>
+  <form class="card" id="loginForm">
+    <h1>관리자 로그인</h1>
+    <p>하우스토리 견적 요청을 확인해요.</p>
+    <div class="f"><label for="uid">아이디</label><input id="uid" type="text" autocomplete="username" autocapitalize="off" spellcheck="false" required></div>
+    <div class="f"><label for="pw">비밀번호</label><input id="pw" type="password" autocomplete="current-password" required></div>
+    <button class="btn" type="submit" id="loginBtn">로그인</button>
+    <div class="err" id="loginErr"></div>
+  </form>
+</section>
+
+<!-- 대시보드 -->
+<main class="wrap" id="dash" hidden>
+  <div class="stats" id="stats">
+    <button class="stat" data-f="all" aria-pressed="true"><b class="num" id="sAll">0</b><span>전체</span></button>
+    <button class="stat" data-f="new" aria-pressed="false"><b class="num" id="sNew">0</b><span>신규 · 아직 연락 전</span></button>
+    <button class="stat" data-f="active" aria-pressed="false"><b class="num" id="sActive">0</b><span>진행 중 (연락함·견적·조립)</span></button>
+    <button class="stat" data-f="done" aria-pressed="false"><b class="num" id="sDone">0</b><span>완료</span></button>
+    <button class="stat" data-f="month" aria-pressed="false"><b class="num" id="sMonth">0</b><span>이번 달 접수</span></button>
+  </div>
+
+  <div class="tools">
+    <input type="search" id="q" placeholder="이름, 연락처, 메모 검색">
+    <div class="r"><span id="updated"></span><button class="btn line sm" id="refresh">새로고침</button></div>
+  </div>
+
+  <div class="list" id="list">
+    <div class="row head"><div>접수</div><div>이름 · 연락처</div><div>용도 · 예산</div><div>상태</div><div>메모(관리자)</div><div>요청 내용</div></div>
+    <div id="rows"></div>
+    <div class="empty" id="empty" hidden>아직 접수된 요청이 없어요.</div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+(function () {
+  var cfg = window.HOWSTORY_CONFIG || {};
+  var $ = function (id) { return document.getElementById(id); };
+  var STATUS = [
+    ['new', '신규'], ['contacted', '연락함'], ['quoted', '견적 보냄'],
+    ['building', '조립 중'], ['done', '완료'], ['canceled', '취소']
+  ];
+  var PURPOSE_ALIAS = { '게임': '게임', '사무·인강': '사무·인강', '영상 편집': '영상 편집', 'AI·개발': 'AI·개발' };
+
+  if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY || !window.supabase) {
+    $('setup').hidden = false; return;
+  }
+  var sb = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+  var all = []; var filter = 'all'; var q = ''; var timer = null;
+
+  function toast(msg) { var t = $('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(function () { t.classList.remove('show'); }, 1800); }
+  function fmt(ts) { var d = new Date(ts); var p = function (n) { return (n < 10 ? '0' : '') + n; }; return p(d.getMonth() + 1) + '.' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function contactLink(c) {
+    c = (c || '').trim();
+    if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(c)) return '<a href="mailto:' + esc(c) + '">' + esc(c) + '</a>';
+    var digits = c.replace(/[^0-9+]/g, '');
+    if (digits.length >= 9) return '<a href="tel:' + esc(digits) + '">' + esc(c) + '</a>';
+    return esc(c);
+  }
+
+  function show(view) {
+    $('login').hidden = view !== 'login';
+    $('dash').hidden = view !== 'dash';
+    $('who').hidden = view !== 'dash';
+  }
+
+  // ---- auth ----
+  $('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var id = $('uid').value.trim(); var pw = $('pw').value;
+    var email = id.indexOf('@') > -1 ? id : id + '@' + (cfg.LOGIN_DOMAIN || 'shortply.co.kr');
+    $('loginErr').textContent = ''; $('loginBtn').disabled = true; $('loginBtn').textContent = '확인 중...';
+    sb.auth.signInWithPassword({ email: email, password: pw }).then(function (r) {
+      $('loginBtn').disabled = false; $('loginBtn').textContent = '로그인';
+      if (r.error) { $('loginErr').textContent = '아이디나 비밀번호가 맞지 않아요.'; return; }
+      $('pw').value = '';
+      boot(r.data.session);
+    });
+  });
+  $('logout').addEventListener('click', function () { sb.auth.signOut().then(function () { all = []; show('login'); }); });
+
+  sb.auth.getSession().then(function (r) { if (r.data.session) boot(r.data.session); else show('login'); });
+  sb.auth.onAuthStateChange(function (ev, session) { if (ev === 'SIGNED_OUT') show('login'); });
+
+  function boot(session) {
+    $('whoName').textContent = (session.user.email || '').split('@')[0];
+    show('dash');
+    load();
+    if (timer) clearInterval(timer);
+    timer = setInterval(load, 60000);
+  }
+
+  // ---- data ----
+  function load() {
+    sb.from('requests').select('*').order('created_at', { ascending: false }).limit(500).then(function (r) {
+      if (r.error) { toast('불러오기 실패: ' + r.error.message); return; }
+      all = r.data || [];
+      $('updated').textContent = '갱신 ' + fmt(new Date().toISOString());
+      render();
+    });
+  }
+
+  function counts() {
+    var now = new Date(); var ym = now.getFullYear() + '-' + (now.getMonth() + 1);
+    var c = { all: all.length, new: 0, active: 0, done: 0, month: 0 };
+    all.forEach(function (x) {
+      if (x.status === 'new') c.new++;
+      else if (x.status === 'contacted' || x.status === 'quoted' || x.status === 'building') c.active++;
+      else if (x.status === 'done') c.done++;
+      var d = new Date(x.created_at); if (d.getFullYear() + '-' + (d.getMonth() + 1) === ym) c.month++;
+    });
+    return c;
+  }
+
+  function visible() {
+    var now = new Date(); var ym = now.getFullYear() + '-' + (now.getMonth() + 1);
+    return all.filter(function (x) {
+      if (filter === 'new' && x.status !== 'new') return false;
+      if (filter === 'active' && !(x.status === 'contacted' || x.status === 'quoted' || x.status === 'building')) return false;
+      if (filter === 'done' && x.status !== 'done') return false;
+      if (filter === 'month') { var d = new Date(x.created_at); if (d.getFullYear() + '-' + (d.getMonth() + 1) !== ym) return false; }
+      if (q) { var hay = [x.name, x.contact, x.purpose, x.memo, x.note].join(' ').toLowerCase(); if (hay.indexOf(q) < 0) return false; }
+      return true;
+    });
+  }
+
+  function render() {
+    var c = counts();
+    $('sAll').textContent = c.all; $('sNew').textContent = c.new; $('sActive').textContent = c.active; $('sDone').textContent = c.done; $('sMonth').textContent = c.month;
+    document.title = (c.new ? '(' + c.new + ') ' : '') + '하우스토리 어드민';
+    var rows = visible();
+    $('empty').hidden = rows.length > 0;
+    $('rows').innerHTML = rows.map(function (x) {
+      var opts = STATUS.map(function (s) { return '<option value="' + s[0] + '"' + (x.status === s[0] ? ' selected' : '') + '>' + s[1] + '</option>'; }).join('');
+      return '<div class="row" data-id="' + x.id + '">' +
+        '<div class="t">' + fmt(x.created_at) + '<small>' + esc(x.source || 'site') + '</small></div>' +
+        '<div><div class="n">' + esc(x.name || '(이름 없음)') + '</div><div class="c">' + contactLink(x.contact) + '</div></div>' +
+        '<div><span class="pill' + (x.status === 'new' ? ' new' : '') + '">' + esc(PURPOSE_ALIAS[x.purpose] || x.purpose || '-') + '</span>' + (x.budget ? '<span class="pill num">' + esc(x.budget) + '만원</span>' : '') + '</div>' +
+        '<div><select class="status ' + esc(x.status) + '" data-act="status">' + opts + '</select></div>' +
+        '<div class="note-wrap"><textarea class="note" data-act="note" placeholder="연락한 내용, 견적 금액 등">' + esc(x.note || '') + '</textarea><div class="saved"></div></div>' +
+        '<div class="m">' + esc(x.memo || '') + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // ---- edit ----
+  $('rows').addEventListener('change', function (e) {
+    var el = e.target; if (el.dataset.act !== 'status') return;
+    var id = el.closest('.row').dataset.id; var v = el.value;
+    sb.from('requests').update({ status: v }).eq('id', id).then(function (r) {
+      if (r.error) { toast('저장 실패'); return; }
+      var x = all.find(function (y) { return y.id === id; }); if (x) x.status = v;
+      el.className = 'status ' + v; toast('상태 저장됨'); render();
+    });
+  });
+  var noteTimers = {};
+  $('rows').addEventListener('input', function (e) {
+    var el = e.target; if (el.dataset.act !== 'note') return;
+    var row = el.closest('.row'); var id = row.dataset.id; var v = el.value;
+    clearTimeout(noteTimers[id]);
+    noteTimers[id] = setTimeout(function () {
+      sb.from('requests').update({ note: v }).eq('id', id).then(function (r) {
+        var s = row.querySelector('.saved');
+        if (r.error) { s.textContent = '저장 실패'; s.style.color = 'var(--bad)'; return; }
+        var x = all.find(function (y) { return y.id === id; }); if (x) x.note = v;
+        s.textContent = '저장됨'; s.style.color = ''; setTimeout(function () { s.textContent = ''; }, 1500);
+      });
+    }, 600);
+  });
+
+  // ---- filters ----
+  document.querySelectorAll('.stat').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.stat').forEach(function (o) { o.setAttribute('aria-pressed', 'false'); });
+      b.setAttribute('aria-pressed', 'true'); filter = b.dataset.f; render();
+    });
+  });
+  $('q').addEventListener('input', function () { q = this.value.trim().toLowerCase(); render(); });
+  $('refresh').addEventListener('click', load);
+})();
+</script>
+</body>
+</html>
