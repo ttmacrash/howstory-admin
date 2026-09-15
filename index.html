@@ -126,6 +126,13 @@
   .rv .media img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .rv .media span { display: grid; place-items: center; font-size: 10px; font-weight: 700; color: var(--ink-2); }
   .rv .acts { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .rv textarea.rbody { width: 100%; min-height: 72px; padding: 7px 8px; border: 1px solid var(--line); background: var(--bg); resize: vertical; border-radius: 0; font-size: 13px; margin-top: 6px; }
+  .rv .rstars { display: flex; gap: 2px; margin-top: 6px; }
+  .rv .rstars button { background: transparent; border: 0; padding: 0 2px; font-size: 20px; line-height: 1; cursor: pointer; color: var(--line); }
+  .rv .rstars button.on { color: var(--accent); }
+  .rv .media .mi { position: relative; }
+  .rv .media .mi button { position: absolute; top: -4px; right: -4px; width: 18px; height: 18px; border: 0; border-radius: 50%; background: var(--bad); color: #fff; font-size: 12px; line-height: 18px; padding: 0; cursor: pointer; }
+  .rv .hint { font-size: 11px; color: var(--ink-3); margin-top: 4px; }
   .lnk { display: inline-flex; align-items: center; justify-content: center; gap: 5px; width: 100%; margin-top: 6px; background: var(--accent-soft); border: 1px solid var(--accent); padding: 7px 8px; font-size: 12px; font-weight: 700; color: var(--ink); cursor: pointer; }
   .del { display: inline-flex; align-items: center; gap: 5px; width: 100%; justify-content: center; margin-top: 6px; background: transparent; border: 1px solid var(--line); padding: 7px 8px; font-size: 12px; font-weight: 700; color: var(--ink-2); cursor: pointer; }
   .del:hover, .del:focus-visible { border-color: var(--bad); color: var(--bad); background: var(--bad-soft); }
@@ -510,7 +517,7 @@
   }
 
   // ---- data ----
-  var reviews = {};
+  var reviews = {}; var editing = {};
   function load() {
     sb.from('reviews').select('*').then(function (rv) { reviews = {}; (rv.data || []).forEach(function (v) { reviews[v.request_id] = v; }); render(); });
     sb.from('requests').select('*').order('created_at', { ascending: false }).limit(5000).then(function (r) {
@@ -563,7 +570,7 @@
     }).join('');
   }
 
-  window.HOWSTORY_ADMIN.setRows = function (rows) { all = rows; render(); };
+  window.HOWSTORY_ADMIN.setRows = function (rows, rv) { all = rows; if (rv) reviews = rv; render(); };
   function mediaUrl(path) { return cfg.SUPABASE_URL.replace(/\/$/, '') + '/storage/v1/object/public/reviews/' + path; }
   function reviewBlock(x) {
     if (x.status !== 'done') return '';
@@ -571,11 +578,23 @@
     var h = '<button type="button" class="lnk" data-act="copylink" data-link="' + esc(link) + '">후기 링크 복사</button>';
     if (!v) return h + '<div class="rv"><span class="st">후기 아직 없음</span> · 링크를 손님에게 보내 주세요</div>';
     var stars = '★★★★★'.slice(0, v.rating) + '☆☆☆☆☆'.slice(0, 5 - v.rating);
+    if (editing[v.id]) {
+      var e = editing[v.id];
+      var rs = [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" data-act="rstar" data-n="' + n + '" class="' + (n <= e.rating ? 'on' : '') + '">★</button>'; }).join('');
+      var em = e.media.map(function (m, i) { return '<div class="mi">' + (m.type === 'video' ? '<span>영상</span>' : '<img src="' + esc(mediaUrl(m.path)) + '" alt="">') + '<button type="button" data-act="rmmedia" data-i="' + i + '" aria-label="이 파일 삭제">×</button></div>'; }).join('');
+      return h + '<div class="rv" data-rid="' + v.id + '">' +
+        '<span class="st wait">후기 수정 중</span><div class="rstars">' + rs + '</div>' +
+        '<textarea class="rbody" data-act="rbody" maxlength="1000">' + esc(e.body) + '</textarea>' +
+        (em ? '<div class="media">' + em + '</div><div class="hint">× 를 누르면 저장할 때 그 파일이 삭제돼요</div>' : '') +
+        '<div class="acts"><button type="button" class="btn sm" data-act="rsave">저장</button><button type="button" class="btn line sm" data-act="rcancel">취소</button></div>' +
+      '</div>';
+    }
     var media = (v.media || []).map(function (m) { return m.type === 'video' ? '<a href="' + esc(mediaUrl(m.path)) + '" target="_blank" rel="noopener"><span>영상</span></a>' : '<a href="' + esc(mediaUrl(m.path)) + '" target="_blank" rel="noopener"><img src="' + esc(mediaUrl(m.path)) + '" alt=""></a>'; }).join('');
     return h + '<div class="rv" data-rid="' + v.id + '">' +
       '<span class="st ' + (v.approved ? 'live' : 'wait') + '">' + (v.approved ? '사이트에 게시 중' : '후기 도착 · 승인 대기') + '</span> <span class="stars">' + stars + '</span>' +
       '<div class="body">' + esc(v.body) + '</div>' + (media ? '<div class="media">' + media + '</div>' : '') +
-      '<div class="acts">' + (v.approved ? '<button type="button" class="btn line sm" data-act="unapprove">게시 내리기</button>' : '<button type="button" class="btn sm" data-act="approve">승인해서 사이트에 올리기</button>') + '</div>' +
+      '<div class="acts">' + (v.approved ? '<button type="button" class="btn line sm" data-act="unapprove">게시 내리기</button>' : '<button type="button" class="btn sm" data-act="approve">승인해서 사이트에 올리기</button>') +
+      '<button type="button" class="btn line sm" data-act="redit">수정</button><button type="button" class="btn line sm" data-act="rdelete" style="color:var(--bad)">후기 삭제</button></div>' +
     '</div>';
   }
   $('rows').addEventListener('click', function (e) {
@@ -585,6 +604,41 @@
       var done = function () { toast('후기 링크를 복사했어요. 손님에게 보내 주세요.'); };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(done, function () { window.prompt('링크를 복사하세요', link); });
       else window.prompt('링크를 복사하세요', link);
+      return;
+    }
+    var rv = e.target.closest('.rv'); var rid = rv ? rv.dataset.rid : null;
+    var t = e.target.closest('[data-act]'); var act = t ? t.dataset.act : '';
+    if (rid && act === 'redit') {
+      var v0 = null; Object.keys(reviews).forEach(function (k) { if (reviews[k].id === rid) v0 = reviews[k]; });
+      if (v0) editing[rid] = { rating: v0.rating, body: v0.body, media: (v0.media || []).slice(), removed: [] };
+      render(); return;
+    }
+    if (rid && act === 'rcancel') { delete editing[rid]; render(); return; }
+    if (rid && act === 'rstar') { editing[rid].rating = +t.dataset.n; rv.querySelectorAll('[data-act="rstar"]').forEach(function (b) { b.classList.toggle('on', +b.dataset.n <= editing[rid].rating); }); return; }
+    if (rid && act === 'rmmedia') { var e0 = editing[rid]; e0.body = rv.querySelector('[data-act="rbody"]').value; e0.removed.push(e0.media[+t.dataset.i]); e0.media.splice(+t.dataset.i, 1); render(); return; }
+    if (rid && act === 'rsave') {
+      if (!isAdmin) { toast('관리자만 할 수 있어요'); return; }
+      var ed = editing[rid]; ed.body = rv.querySelector('[data-act="rbody"]').value.trim();
+      if (!ed.body) { toast('내용을 비울 수 없어요. 삭제하려면 후기 삭제를 눌러 주세요.'); return; }
+      t.disabled = true;
+      var delFiles = ed.removed.length ? sb.storage.from('reviews').remove(ed.removed.map(function (m) { return m.path; })) : Promise.resolve({});
+      delFiles.then(function () { return sb.from('reviews').update({ rating: ed.rating, body: ed.body, media: ed.media, updated_at: new Date().toISOString() }).eq('id', rid); })
+        .then(function (r) {
+          if (r.error) { t.disabled = false; toast('저장 실패: ' + r.error.message); return; }
+          Object.keys(reviews).forEach(function (k) { if (reviews[k].id === rid) { reviews[k].rating = ed.rating; reviews[k].body = ed.body; reviews[k].media = ed.media; } });
+          delete editing[rid]; toast('후기를 고쳤어요'); render();
+        });
+      return;
+    }
+    if (rid && act === 'rdelete') {
+      if (!isAdmin) { toast('관리자만 할 수 있어요'); return; }
+      var vd = null, key = null; Object.keys(reviews).forEach(function (k) { if (reviews[k].id === rid) { vd = reviews[k]; key = k; } });
+      if (!window.confirm('이 후기를 삭제할까요?\n\n별점 ' + (vd ? vd.rating : '') + '점 · 사진 ' + (vd && vd.media ? vd.media.length : 0) + '개\n\n사이트에서도 내려가고, 사진·동영상도 함께 지워져요. 복구할 수 없어요.')) return;
+      t.disabled = true;
+      var paths = (vd && vd.media || []).map(function (m) { return m.path; });
+      (paths.length ? sb.storage.from('reviews').remove(paths) : Promise.resolve({}))
+        .then(function () { return sb.from('reviews').delete().eq('id', rid); })
+        .then(function (r) { if (r.error) { t.disabled = false; toast('삭제 실패: ' + r.error.message); return; } delete reviews[key]; toast('후기를 삭제했어요'); render(); });
       return;
     }
     var ap = e.target.closest('[data-act="approve"],[data-act="unapprove"]');
