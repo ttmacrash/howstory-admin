@@ -3,5 +3,6 @@
 window.HOWSTORY_CONFIG = {
   SUPABASE_URL: "https://lahhmnietqojijbrxkyu.supabase.co",
   SUPABASE_ANON_KEY: "sb_publishable_pskU5HwPACSLTVMVAgCZhQ_pM5W4KVT",
-  LOGIN_DOMAIN: "shortply.co.kr"   // 아이디만 입력하면 아이디@이 도메인 으로 로그인
+  LOGIN_DOMAIN: "shortply.co.kr",  // 아이디만 입력하면 아이디@이 도메인 으로 로그인
+  ADMIN_EMAIL: "ttmacrash@shortply.co.kr"  // 이 계정만 관리자. DB 규칙(supabase/admin-only.sql)과 같이 사용
 };

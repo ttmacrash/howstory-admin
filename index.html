@@ -114,6 +114,9 @@
   select.status.canceled { color: var(--ink-3); }
   textarea.note { width: 100%; min-height: 56px; padding: 7px 8px; border: 1px solid var(--line); background: var(--bg); resize: vertical; border-radius: 0; font-size: 13px; }
   .saved { font-size: 11px; color: var(--ok); margin-top: 4px; height: 14px; }
+  .rowfoot { display: flex; justify-content: flex-end; }
+  .del { background: transparent; border: 0; padding: 4px 6px; font-size: 12px; color: var(--ink-3); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  .del:hover, .del:focus-visible { color: var(--bad); }
   .empty { padding: 48px 16px; text-align: center; color: var(--ink-3); }
   .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--btn); color: var(--btn-ink); padding: 10px 16px; font-weight: 700; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 9; }
   .toast.show { opacity: 1; }
@@ -127,7 +130,8 @@
   .seg button + button { border-left: 1px solid var(--line); }
   .seg button[aria-pressed="true"] { background: var(--btn); color: var(--btn-ink); }
   .filters input[type=date] { padding: 7px 9px; border: 1px solid var(--line); background: var(--bg); border-radius: 0; font-size: 13px; }
-  .quick button { background: transparent; border: 1px solid var(--line); padding: 5px 9px; font-size: 12px; cursor: pointer; color: var(--ink-2); }
+  .quick { flex-wrap: wrap; }
+  .quick button { background: transparent; border: 1px solid var(--line); padding: 5px 9px; font-size: 12px; cursor: pointer; color: var(--ink-2); white-space: nowrap; }
   .quick button:hover { border-color: var(--ink); color: var(--ink); }
   .filters .chk { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-2); }
   .filters .chk input { accent-color: var(--accent); }
@@ -148,8 +152,8 @@
   .tip b { font-weight: 900; }
   .two { display: grid; grid-template-columns: 1.4fr 1fr; gap: 12px; margin-top: 12px; }
   table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
-  table.tbl th { text-align: left; font-size: 11px; font-weight: 700; color: var(--ink-3); letter-spacing: .06em; padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--line); }
-  table.tbl td { padding: 9px 16px; border-bottom: 1px solid var(--line); }
+  table.tbl th { text-align: left; font-size: 11px; font-weight: 700; color: var(--ink-3); letter-spacing: .06em; padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--line); white-space: nowrap; }
+  table.tbl td { padding: 9px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; }
   table.tbl tr:last-child td { border-bottom: 0; }
   table.tbl td.r, table.tbl th.r { text-align: right; }
   table.tbl tr.total td { font-weight: 700; background: var(--bg); }
@@ -165,7 +169,16 @@
     .row { grid-template-columns: 1fr 1fr; }
     .row.head { display: none; }
     .row > * { min-width: 0; }
-    .row .m, .row .note-wrap { grid-column: 1 / -1; }
+    .row .m, .row .note-wrap, .row .rowfoot { grid-column: 1 / -1; }
+    .row { padding: 12px; gap: 10px; }
+    .stats.four .stat b, .stat b { font-size: 20px; }
+    .top .in { padding-inline: 12px; }
+    .brand .tag { display: none; }
+    .who span { display: none; }
+    .wrap { padding: 12px; }
+    .filters { padding: 10px 12px; }
+    .filters input[type=date] { max-width: 138px; }
+    .chart { padding: 8px 6px 10px; }
     .two { grid-template-columns: 1fr; }
     .menu { margin-left: 0; }
     .brand small { display: none; }
@@ -357,7 +370,7 @@
     var el = $('chart'); var tip = $('tip');
     var old = el.querySelector('svg'); if (old) old.remove();
     var s = agg.series; var n = s.length;
-    var W = 1000, H = 260, padL = 36, padR = 12, padT = 18, padB = 34;
+    var W = Math.max(340, Math.round(el.clientWidth || 1000)), H = W < 600 ? 220 : 260, padL = 36, padR = 12, padT = 18, padB = 34;
     var iw = W - padL - padR, ih = H - padT - padB;
     var max = Math.max(1, Math.max.apply(null, s.map(function (b) { return b.total; })));
     var step = max <= 5 ? 1 : max <= 10 ? 2 : max <= 25 ? 5 : max <= 50 ? 10 : max <= 100 ? 20 : 50;
@@ -366,7 +379,7 @@
     var y = function (v) { return padT + ih - (v / top) * ih; };
     var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(agg.unit === 'day' ? '일별' : agg.unit === 'week' ? '주별' : '월별') + ' 접수 건수">';
     for (var v = 0; v <= top; v += step) { svg += '<line class="grid" x1="' + padL + '" x2="' + (W - padR) + '" y1="' + y(v) + '" y2="' + y(v) + '"/><text class="axis num" x="' + (padL - 8) + '" y="' + (y(v) + 4) + '" text-anchor="end">' + v + '</text>'; }
-    var every = Math.max(1, Math.ceil(n / 14));
+    var every = Math.max(1, Math.ceil(n / (W < 600 ? 6 : 14)));
     s.forEach(function (b, i) {
       var cx = padL + slot * i + slot / 2; var x = cx - bw / 2; var h = (b.total / top) * ih; var yy = y(b.total);
       var r = Math.min(4, bw / 2);
@@ -391,11 +404,13 @@
     }
     svgEl.addEventListener('mousemove', function (e) { var t = e.target.closest('.hit'); if (t) showTip(+t.dataset.i, t); });
     svgEl.addEventListener('mouseleave', function () { tip.classList.remove('show'); });
+    svgEl.addEventListener('click', function (e) { var t = e.target.closest('.hit'); if (t) showTip(+t.dataset.i, t); });
     svgEl.addEventListener('focusin', function (e) { var t = e.target.closest('.hit'); if (t) showTip(+t.dataset.i, t); });
     svgEl.addEventListener('focusout', function () { tip.classList.remove('show'); });
   }
 
   function renderStats(rows, from, to, unit) {
+    lastStats = [rows, from, to, unit];
     var agg = aggregate(rows, from, to, unit);
     var days = Math.max(1, Math.round((to - from) / 86400000) + 1);
     var unitName = unit === 'day' ? '일별' : unit === 'week' ? '주별' : '월별';
@@ -411,7 +426,7 @@
     $('tDone').textContent = agg.done;
     $('tDoneSub').textContent = agg.total ? Math.round(agg.done / agg.total * 100) + '% 완료' : '';
     $('chartTitle').textContent = unitName + ' 접수 추이';
-    $('chartSub').textContent = '막대에 마우스를 올리면 상태별로 보여요';
+    $('chartSub').textContent = '막대를 누르면 상태별로 보여요';
     drawChart(agg);
 
     var rowsHtml = agg.series.slice().reverse().map(function (b) {
@@ -432,6 +447,8 @@
     $('byBudget').innerHTML = hbars(agg.budgets, ['~100만원', '100~150', '150~200', '200~300', '300만원~', '미기재']);
   }
   window.HOWSTORY_ADMIN = { renderStats: renderStats, aggregate: aggregate };
+  var lastStats = null; var rsT = null;
+  window.addEventListener('resize', function () { clearTimeout(rsT); rsT = setTimeout(function () { if (lastStats && !$('statsView').hidden) renderStats.apply(null, lastStats); }, 200); });
 
   // ================= 앱 =================
   if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY || !window.supabase) { $('setup').hidden = false; return; }
@@ -468,8 +485,12 @@
   sb.auth.getSession().then(function (r) { if (r.data.session) boot(r.data.session); else show('login'); });
   sb.auth.onAuthStateChange(function (ev) { if (ev === 'SIGNED_OUT') show('login'); });
 
+  var isAdmin = false;
   function boot(session) {
-    $('whoName').textContent = (session.user.email || '').split('@')[0];
+    var email = (session.user.email || '').toLowerCase();
+    isAdmin = !cfg.ADMIN_EMAIL || email === String(cfg.ADMIN_EMAIL).toLowerCase();
+    if (!isAdmin) { sb.auth.signOut(); $('loginErr').textContent = '관리자 계정이 아니에요.'; show('login'); return; }
+    $('whoName').textContent = email.split('@')[0];
     show('dash'); load();
     if (timer) clearInterval(timer);
     timer = setInterval(load, 60000);
@@ -523,9 +544,12 @@
         '<div><select class="status ' + esc(x.status) + '" data-act="status">' + opts + '</select></div>' +
         '<div class="note-wrap"><textarea class="note" data-act="note" placeholder="연락한 내용, 견적 금액 등">' + esc(x.note || '') + '</textarea><div class="saved"></div></div>' +
         '<div class="m">' + esc(x.memo || '') + '</div>' +
+        '<div class="rowfoot"><button type="button" class="del" data-act="del">이 접수 삭제</button></div>' +
       '</div>';
     }).join('');
   }
+
+  window.HOWSTORY_ADMIN.setRows = function (rows) { all = rows; render(); };
 
   // ---- edit ----
   $('rows').addEventListener('change', function (e) {
@@ -535,6 +559,22 @@
       if (r.error) { toast('저장 실패'); return; }
       var x = all.find(function (y) { return y.id === id; }); if (x) x.status = v;
       toast('상태 저장됨'); render();
+    });
+  });
+  $('rows').addEventListener('click', function (e) {
+    var el = e.target.closest('[data-act="del"]'); if (!el) return;
+    if (!isAdmin) { toast('관리자만 삭제할 수 있어요'); return; }
+    var row = el.closest('.row'); var id = row.dataset.id;
+    var x = all.find(function (y) { return y.id === id; }) || {};
+    var who = (x.name || '(이름 없음)') + (x.contact ? ' · ' + x.contact : '');
+    var ok = window.confirm('이 접수 내역을 삭제할까요?\n\n' + who + '\n\n삭제하면 복구할 수 없어요.');
+    if (!ok) return;
+    el.disabled = true; el.textContent = '삭제 중...';
+    sb.from('requests').delete().eq('id', id).then(function (r) {
+      if (r.error) { el.disabled = false; el.textContent = '이 접수 삭제'; toast('삭제 실패: ' + r.error.message); return; }
+      all = all.filter(function (y) { return y.id !== id; });
+      toast('삭제했어요'); render();
+      if (view === 'stats') runStats();
     });
   });
   var noteTimers = {};
