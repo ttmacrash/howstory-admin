@@ -115,8 +115,9 @@
   textarea.note { width: 100%; min-height: 56px; padding: 7px 8px; border: 1px solid var(--line); background: var(--bg); resize: vertical; border-radius: 0; font-size: 13px; }
   .saved { font-size: 11px; color: var(--ok); margin-top: 4px; height: 14px; }
   .rowfoot { display: flex; justify-content: flex-end; }
-  .del { background: transparent; border: 0; padding: 4px 6px; font-size: 12px; color: var(--ink-3); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
-  .del:hover, .del:focus-visible { color: var(--bad); }
+  .del { display: inline-flex; align-items: center; gap: 5px; width: 100%; justify-content: center; margin-top: 6px; background: transparent; border: 1px solid var(--line); padding: 7px 8px; font-size: 12px; font-weight: 700; color: var(--ink-2); cursor: pointer; }
+  .del:hover, .del:focus-visible { border-color: var(--bad); color: var(--bad); background: var(--bad-soft); }
+  .del svg { width: 13px; height: 13px; }
   .empty { padding: 48px 16px; text-align: center; color: var(--ink-3); }
   .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--btn); color: var(--btn-ink); padding: 10px 16px; font-weight: 700; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 9; }
   .toast.show { opacity: 1; }
@@ -541,10 +542,9 @@
         '<div class="t">' + fmt(x.created_at) + '<small>' + esc(x.source || 'site') + '</small></div>' +
         '<div><div class="n">' + esc(x.name || '(이름 없음)') + '</div><div class="c">' + contactLink(x.contact) + '</div></div>' +
         '<div><span class="pill' + (x.status === 'new' ? ' new' : '') + '">' + esc(x.purpose || '-') + '</span>' + (x.budget ? '<span class="pill num">' + esc(x.budget) + '만원</span>' : '') + '</div>' +
-        '<div><select class="status ' + esc(x.status) + '" data-act="status">' + opts + '</select></div>' +
+        '<div><select class="status ' + esc(x.status) + '" data-act="status">' + opts + '</select><button type="button" class="del" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>삭제</button></div>' +
         '<div class="note-wrap"><textarea class="note" data-act="note" placeholder="연락한 내용, 견적 금액 등">' + esc(x.note || '') + '</textarea><div class="saved"></div></div>' +
         '<div class="m">' + esc(x.memo || '') + '</div>' +
-        '<div class="rowfoot"><button type="button" class="del" data-act="del">이 접수 삭제</button></div>' +
       '</div>';
     }).join('');
   }
@@ -571,7 +571,7 @@
     if (!ok) return;
     el.disabled = true; el.textContent = '삭제 중...';
     sb.from('requests').delete().eq('id', id).then(function (r) {
-      if (r.error) { el.disabled = false; el.textContent = '이 접수 삭제'; toast('삭제 실패: ' + r.error.message); return; }
+      if (r.error) { el.disabled = false; el.innerHTML = '삭제'; toast('삭제 실패: ' + r.error.message); return; }
       all = all.filter(function (y) { return y.id !== id; });
       toast('삭제했어요'); render();
       if (view === 'stats') runStats();
