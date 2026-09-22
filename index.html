@@ -660,7 +660,7 @@
   function mediaUrl(path) { return cfg.SUPABASE_URL.replace(/\/$/, '') + '/storage/v1/object/public/reviews/' + path; }
   function reviewBlock(x) {
     if (x.status !== 'done') return '';
-    var v = reviews[x.id]; var link = 'https://shortply.co.kr/review/?t=' + x.review_token;
+    var v = reviews[x.id]; var link = 'https://spaceurban.co.kr/review/?t=' + x.review_token;
     var h = '<button type="button" class="lnk" data-act="copylink" data-link="' + esc(link) + '">후기 링크 복사</button>';
     if (!v) return h + '<div class="rv"><span class="st">후기 아직 없음</span> · 링크를 손님에게 보내 주세요</div>';
     var stars = '★★★★★'.slice(0, v.rating) + '☆☆☆☆☆'.slice(0, 5 - v.rating);
