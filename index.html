@@ -206,6 +206,39 @@
     .brand small { display: none; }
     .filters .go { margin-left: 0; width: 100%; }
   }
+
+  /* ---- 스테이 ---- */
+  .seg.sub { margin-bottom:14px; }
+  .seg.sub .cnt { display:inline-block; min-width:18px; padding:0 6px; margin-left:6px; border-radius:999px; background:var(--accent); color:#1A1A1A; font-size:11px; font-weight:800; }
+  .brow { grid-template-columns: 110px 1.1fr 1fr 150px 1.2fr 1.4fr; }
+  .brow .d { font-weight:700; } .brow .d small { display:block; font-weight:500; color:var(--ink-3); }
+  select.status.confirmed { border-color:#2E7D5B; color:#2E7D5B; } select.status.declined { color:var(--ink-3); }
+  .acal { margin-top:12px; }
+  .acal-nav { display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+  .acal-nav button { width:30px; height:30px; border-radius:50%; border:1px solid var(--line); background:var(--bg); cursor:pointer; font-size:16px; }
+  .acal-nav b { font-size:15px; min-width:110px; }
+  .acal-lg { margin-left:auto; font-size:12px; color:var(--ink-3); display:flex; gap:10px; align-items:center; }
+  .acal-lg i { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:4px; vertical-align:-2px; border:1px solid var(--line); }
+  .acal-lg i.b { background:#E9E4DB; } .acal-lg i.k { background:#D9E8DF; } .acal-lg i.p { border-color:var(--accent); border-width:2px; }
+  .acal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .acal-grid .dow { text-align:center; font-size:11px; font-weight:700; color:var(--ink-3); padding:4px 0; }
+  .aday { border:1px solid var(--line); border-radius:8px; min-height:64px; padding:6px 8px; background:var(--bg); display:flex; flex-direction:column; gap:4px; font-size:12px; }
+  .aday.empty { visibility:hidden; }
+  .aday.past { opacity:.45; }
+  .aday.blocked { background:#E9E4DB; } .aday.booked { background:#D9E8DF; } .aday.pricey { border-color:var(--accent); border-width:2px; }
+  .aday .h { display:flex; justify-content:space-between; align-items:center; }
+  .aday .h b { font-size:13px; }
+  .aday .h button { border:0; background:transparent; cursor:pointer; font-size:11px; font-weight:700; color:var(--ink-2); padding:2px 6px; border-radius:999px; }
+  .aday .h button:hover { background:rgba(0,0,0,.06); }
+  .aday input { width:100%; border:1px solid var(--line); border-radius:6px; padding:3px 6px; font-size:12px; background:#fff; color:inherit; }
+  .aday .who { font-size:11px; color:#2E7D5B; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .acal-tools { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:14px; padding-top:14px; border-top:1px solid var(--line); font-size:13px; }
+  .acal-tools input { border:1px solid var(--line); border-radius:8px; padding:6px 8px; font-size:13px; background:var(--bg); color:inherit; }
+  .plans-edit { display:grid; gap:8px; margin-top:12px; }
+  .plans-edit .pe { display:grid; grid-template-columns: 90px 90px 1fr 1fr 70px; gap:10px; align-items:center; font-size:13px; }
+  .plans-edit .pe.head { color:var(--ink-3); font-weight:700; font-size:12px; }
+  .plans-edit input { border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:14px; background:var(--bg); color:inherit; width:100%; }
+  @media (max-width: 900px) { .brow { grid-template-columns:1fr; } .aday { min-height:54px; padding:4px 5px; } .aday input { display:none; } .plans-edit .pe { grid-template-columns:1fr 1fr; } }
 </style>
 </head>
 <body>
@@ -220,6 +253,7 @@
       <nav class="menu" id="menu" hidden>
         <button type="button" data-view="dash" aria-pressed="true">접수<span class="cnt" id="menuNew" hidden>0</span></button>
         <button type="button" data-view="stats" aria-pressed="false">통계</button>
+        <button type="button" data-view="stay" aria-pressed="false">스테이<span class="cnt" id="menuStay" hidden>0</span></button>
       </nav>
     </div>
     <div class="who" id="who" hidden><span id="whoName"></span><button class="btn line sm" id="logout">로그아웃</button></div>
@@ -319,6 +353,55 @@
     </div>
   </div>
 </main>
+
+<!-- 스테이 -->
+<main class="wrap" id="stayView" hidden>
+  <div class="seg sub" id="staySub">
+    <button type="button" data-tab="bk" aria-pressed="true">예약 요청<span class="cnt" id="stayNewCnt" hidden>0</span></button>
+    <button type="button" data-tab="cal" aria-pressed="false">달력 · 마감/요금</button>
+    <button type="button" data-tab="plans" aria-pressed="false">플랜 요금</button>
+  </div>
+
+  <div id="stayBk">
+    <div class="stats four">
+      <button class="stat" data-bf="all" aria-pressed="true"><b class="num" id="bAll">0</b><span>전체</span></button>
+      <button class="stat" data-bf="new" aria-pressed="false"><b class="num" id="bNew">0</b><span>신규 · 답장 전</span></button>
+      <button class="stat" data-bf="confirmed" aria-pressed="false"><b class="num" id="bConf">0</b><span>확정</span></button>
+      <button class="stat" data-bf="upcoming" aria-pressed="false"><b class="num" id="bUp">0</b><span>다가오는 숙박</span></button>
+    </div>
+    <div class="tools"><input type="search" id="bq" placeholder="이름, 연락처, 메모 검색"><div class="r"><span id="bUpdated"></span><button class="btn line sm" id="bRefresh">새로고침</button></div></div>
+    <div class="panel">
+      <div class="row head brow"><div>접수</div><div>숙박</div><div>손님</div><div>상태</div><div>메모(관리자)</div><div>요청 내용</div></div>
+      <div id="bRows"></div>
+      <div class="empty" id="bEmpty" hidden>아직 예약 요청이 없어요.</div>
+    </div>
+  </div>
+
+  <div id="stayCal" hidden>
+    <div class="panel">
+      <div class="ph"><h2>달력</h2><span>날짜를 누르면 <b>열림 → 마감 → 열림</b>으로 바뀌어요. 요금을 바꿀 날은 오른쪽 칸에 입력.</span></div>
+      <div class="acal">
+        <div class="acal-nav"><button type="button" id="aPrev">‹</button><b id="aMonth"></b><button type="button" id="aNext">›</button>
+          <span class="acal-lg"><i class="o"></i>열림 <i class="b"></i>마감 <i class="k"></i>예약 확정 <i class="p"></i>요금 변경</span></div>
+        <div class="acal-grid" id="aGrid"></div>
+      </div>
+      <div class="acal-tools">
+        <label>기간 한 번에 <input type="date" id="rFrom"> ~ <input type="date" id="rTo"></label>
+        <button class="btn line sm" data-r="blocked">마감</button><button class="btn line sm" data-r="open">열기</button>
+        <label>요금 <input type="number" id="rPrice" placeholder="원 · 비우면 플랜 요금" step="1000" min="0"></label><button class="btn line sm" data-r="price">요금 적용</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="stayPlans" hidden>
+    <div class="panel">
+      <div class="ph"><h2>플랜 요금</h2><span>1박 기준, 원. 금·토 밤이 주말 요금이에요. 사이트에 바로 반영돼요.</span></div>
+      <div class="plans-edit" id="plansEdit"></div>
+      <div class="rowfoot"><button class="btn sm" id="plansSave">저장</button><span class="saved" id="plansSaved"></span></div>
+    </div>
+  </div>
+</main>
+
 
 <div class="toast" id="toast"></div>
 
@@ -482,13 +565,14 @@
     $('login').hidden = v !== 'login';
     $('dash').hidden = !(v === 'dash');
     $('statsView').hidden = !(v === 'stats');
+    $('stayView').hidden = !(v === 'stay');
     $('who').hidden = v === 'login';
     $('menu').hidden = v === 'login';
     document.querySelectorAll('#menu button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.view === v)); });
-    if (v === 'dash' || v === 'stats') view = v;
+    if (v === 'dash' || v === 'stats' || v === 'stay') view = v;
   }
   document.querySelectorAll('#menu button').forEach(function (b) {
-    b.addEventListener('click', function () { show(b.dataset.view); if (b.dataset.view === 'stats') runStats(); });
+    b.addEventListener('click', function () { show(b.dataset.view); if (b.dataset.view === 'stats') runStats(); if (b.dataset.view === 'stay') stayLoad(); });
   });
 
   // ---- auth ----
@@ -513,7 +597,7 @@
     isAdmin = !cfg.ADMIN_EMAIL || email === String(cfg.ADMIN_EMAIL).toLowerCase();
     if (!isAdmin) { sb.auth.signOut(); $('loginErr').textContent = '관리자 계정이 아니에요.'; show('login'); return; }
     $('whoName').textContent = email.split('@')[0];
-    show('dash'); load();
+    show('dash'); load(); stayLoad();
     if (timer) clearInterval(timer);
     timer = setInterval(load, 60000);
   }
@@ -739,6 +823,151 @@
     var rows = all.filter(function (r) { var d = new Date(r.created_at); if (d < from || d > end) return false; if (ex && r.source === 'test') return false; return true; });
     renderStats(rows, from, to, unit);
   }
+
+  // ================= 스테이: 예약 요청 · 달력 · 플랜 =================
+  var BST = [['new', '신규'], ['confirmed', '확정'], ['declined', '거절'], ['canceled', '취소']];
+  var BST_NAME = {}; BST.forEach(function (s) { BST_NAME[s[0]] = s[1]; });
+  var bks = [], plans = [], cal = {}, bfilter = 'all', aview = null, stayTab = 'bk';
+  function won(n) { return n == null ? '-' : Number(n).toLocaleString('ko-KR') + '원'; }
+  function addD(s, n) { var d = new Date(s + 'T00:00:00'); d.setDate(d.getDate() + n); return ymd(d); }
+  function fmtD(s) { var d = new Date(s + 'T00:00:00'); return pad(d.getMonth() + 1) + '.' + pad(d.getDate()) + '(' + '일월화수목금토'[d.getDay()] + ')'; }
+
+  document.querySelectorAll('#staySub button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      stayTab = b.dataset.tab;
+      document.querySelectorAll('#staySub button').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+      $('stayBk').hidden = stayTab !== 'bk'; $('stayCal').hidden = stayTab !== 'cal'; $('stayPlans').hidden = stayTab !== 'plans';
+      if (stayTab === 'cal') renderACal(); if (stayTab === 'plans') renderPlansEdit();
+    });
+  });
+
+  function stayLoad() {
+    if (!sb) return;
+    var from = ymd(new Date()); var to = addD(from, 420);
+    sb.from('stay_bookings').select('*').order('created_at', { ascending: false }).limit(3000).then(function (r) {
+      if (r.error) { if (view === 'stay') toast('예약 불러오기 실패: ' + r.error.message); return; }
+      bks = r.data || []; $('bUpdated').textContent = '갱신 ' + fmt(new Date().toISOString()); renderBk();
+    });
+    sb.from('stay_calendar').select('*').gte('day', addD(from, -60)).lte('day', to).then(function (r) { cal = {}; (r.data || []).forEach(function (x) { cal[x.day] = x; }); if (stayTab === 'cal') renderACal(); });
+    sb.from('stay_plans').select('*').order('sort').then(function (r) { plans = r.data || []; if (stayTab === 'plans') renderPlansEdit(); });
+  }
+
+  // ---- 예약 요청 ----
+  function bkVisible() {
+    var q = ($('bq').value || '').trim().toLowerCase(); var today = ymd(new Date());
+    return bks.filter(function (x) {
+      if (bfilter === 'new' && x.status !== 'new') return false;
+      if (bfilter === 'confirmed' && x.status !== 'confirmed') return false;
+      if (bfilter === 'upcoming' && !(x.status === 'confirmed' && x.check_out >= today)) return false;
+      if (q && [x.name, x.contact, x.memo, x.note].join(' ').toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    });
+  }
+  function renderBk() {
+    var today = ymd(new Date()); var n = 0, c = 0, u = 0;
+    bks.forEach(function (x) { if (x.status === 'new') n++; if (x.status === 'confirmed') { c++; if (x.check_out >= today) u++; } });
+    $('bAll').textContent = bks.length; $('bNew').textContent = n; $('bConf').textContent = c; $('bUp').textContent = u;
+    $('menuStay').textContent = n; $('menuStay').hidden = !n; $('stayNewCnt').textContent = n; $('stayNewCnt').hidden = !n;
+    var rows = bkVisible(); $('bEmpty').hidden = rows.length > 0;
+    $('bRows').innerHTML = rows.map(function (x) {
+      var opts = BST.map(function (s) { return '<option value="' + s[0] + '"' + (x.status === s[0] ? ' selected' : '') + '>' + s[1] + '</option>'; }).join('');
+      var plan = plans.filter(function (p) { return p.id === x.plan_id; })[0];
+      return '<div class="row brow" data-id="' + x.id + '">' +
+        '<div class="t">' + fmt(x.created_at) + '<small>' + esc(x.lang || 'ko') + ' · ' + esc(x.source || 'site') + '</small></div>' +
+        '<div class="d">' + fmtD(x.check_in) + ' → ' + fmtD(x.check_out) + '<small>' + x.nights + '박 · ' + x.guests + '명 · ' + (plan ? plan.guests + '인 플랜' : esc(x.plan_id)) + ' · <b class="num">' + won(x.total) + '</b></small></div>' +
+        '<div><div class="n">' + esc(x.name || '(이름 없음)') + '</div><div class="c">' + contactLink(x.contact) + '</div></div>' +
+        '<div><select class="status ' + esc(x.status) + '" data-act="bstatus">' + opts + '</select><button type="button" class="del" data-act="bdel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>삭제</button></div>' +
+        '<div class="note-wrap"><textarea class="note" data-act="bnote" placeholder="답장 내용, 입금 여부 등">' + esc(x.note || '') + '</textarea><div class="saved"></div></div>' +
+        '<div class="m">' + esc(x.memo || '') + '</div>' +
+      '</div>';
+    }).join('');
+  }
+  document.querySelectorAll('#stayBk .stat').forEach(function (b) { b.addEventListener('click', function () { bfilter = b.dataset.bf; document.querySelectorAll('#stayBk .stat').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); }); renderBk(); }); });
+  $('bq').addEventListener('input', renderBk);
+  $('bRefresh').addEventListener('click', stayLoad);
+  function nightsOf(x) { var out = [], d = x.check_in; while (d < x.check_out) { out.push(d); d = addD(d, 1); } return out; }
+  function setCalDays(days, patch) {
+    var rows = days.map(function (d) { var cur = cal[d] || { day: d, status: 'open', price: null }; var r = { day: d, status: patch.status != null ? patch.status : cur.status, price: patch.price !== undefined ? patch.price : cur.price, note: patch.note !== undefined ? patch.note : (cur.note || null) }; return r; });
+    return sb.from('stay_calendar').upsert(rows, { onConflict: 'day' }).then(function (r) { if (r.error) { toast('달력 저장 실패: ' + r.error.message); return false; } rows.forEach(function (r) { cal[r.day] = r; }); if (stayTab === 'cal') renderACal(); return true; });
+  }
+  $('bRows').addEventListener('change', function (e) {
+    var el = e.target, row = el.closest('.row'); if (!row) return; var id = row.dataset.id, x = bks.filter(function (b) { return b.id === id; })[0];
+    if (el.dataset.act === 'bstatus') {
+      var st = el.value, prev = x.status;
+      sb.from('stay_bookings').update({ status: st }).eq('id', id).then(function (r) {
+        if (r.error) { toast('저장 실패: ' + r.error.message); el.value = prev; return; }
+        x.status = st; el.className = 'status ' + st; toast(BST_NAME[st] + '으로 바꿨어요');
+        var days = nightsOf(x);
+        if (st === 'confirmed') setCalDays(days, { status: 'booked', note: (x.name || x.contact) }).then(function (ok) { if (ok) toast('달력 ' + days.length + '일을 예약 확정으로 막았어요'); });
+        else if (prev === 'confirmed') setCalDays(days, { status: 'open', note: null }).then(function (ok) { if (ok) toast('달력 ' + days.length + '일을 다시 열었어요'); });
+        renderBk();
+      });
+    }
+  });
+  var bnoteTimers = {};
+  $('bRows').addEventListener('input', function (e) {
+    var el = e.target; if (el.dataset.act !== 'bnote') return; var row = el.closest('.row'), id = row.dataset.id, saved = row.querySelector('.saved');
+    clearTimeout(bnoteTimers[id]); saved.textContent = '…';
+    bnoteTimers[id] = setTimeout(function () { sb.from('stay_bookings').update({ note: el.value }).eq('id', id).then(function (r) { saved.textContent = r.error ? '저장 실패' : '저장됨'; if (!r.error) { var x = bks.filter(function (b) { return b.id === id; })[0]; if (x) x.note = el.value; } }); }, 600);
+  });
+  $('bRows').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-act="bdel"]'); if (!b) return; var row = b.closest('.row'), id = row.dataset.id;
+    if (!confirm('이 예약 요청을 삭제할까요? 되돌릴 수 없어요.')) return;
+    sb.from('stay_bookings').delete().eq('id', id).then(function (r) { if (r.error) { toast('삭제 실패: ' + r.error.message); return; } bks = bks.filter(function (x) { return x.id !== id; }); renderBk(); toast('삭제했어요'); });
+  });
+
+  // ---- 달력 ----
+  function renderACal() {
+    var tdy = new Date(); tdy.setHours(0, 0, 0, 0); if (!aview) aview = new Date(tdy.getFullYear(), tdy.getMonth(), 1);
+    $('aMonth').textContent = aview.getFullYear() + '년 ' + (aview.getMonth() + 1) + '월';
+    var first = new Date(aview.getFullYear(), aview.getMonth(), 1), last = new Date(aview.getFullYear(), aview.getMonth() + 1, 0);
+    var h = '일월화수목금토'.split('').map(function (d) { return '<div class="dow">' + d + '</div>'; }).join('');
+    for (var i = 0; i < first.getDay(); i++) h += '<div class="aday empty"></div>';
+    for (var d = 1; d <= last.getDate(); d++) {
+      var dt = new Date(aview.getFullYear(), aview.getMonth(), d), s = ymd(dt), c = cal[s] || { status: 'open' }, past = dt < tdy;
+      var cls = 'aday ' + c.status + (past ? ' past' : '') + (c.price ? ' pricey' : '');
+      var lbl = c.status === 'booked' ? '확정' : c.status === 'blocked' ? '마감' : '열림';
+      h += '<div class="' + cls + '" data-d="' + s + '"><div class="h"><b>' + d + '</b>' + (past ? '' : '<button type="button" data-act="tog">' + lbl + '</button>') + '</div>' +
+        (c.status === 'booked' && c.note ? '<div class="who">' + esc(c.note) + '</div>' : '') +
+        (past ? '' : '<input type="number" data-act="price" placeholder="요금" value="' + (c.price || '') + '" step="1000" min="0">') + '</div>';
+    }
+    $('aGrid').innerHTML = h;
+  }
+  $('aPrev').addEventListener('click', function () { aview = new Date(aview.getFullYear(), aview.getMonth() - 1, 1); renderACal(); });
+  $('aNext').addEventListener('click', function () { aview = new Date(aview.getFullYear(), aview.getMonth() + 1, 1); renderACal(); });
+  $('aGrid').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-act="tog"]'); if (!b) return; var s = b.closest('.aday').dataset.d, c = cal[s] || { status: 'open' };
+    if (c.status === 'booked') { if (!confirm('예약 확정으로 막힌 날이에요. 그래도 열까요?')) return; }
+    setCalDays([s], { status: c.status === 'open' ? 'blocked' : 'open', note: null });
+  });
+  var priceTimers = {};
+  $('aGrid').addEventListener('input', function (e) {
+    var el = e.target; if (el.dataset.act !== 'price') return; var s = el.closest('.aday').dataset.d;
+    clearTimeout(priceTimers[s]); priceTimers[s] = setTimeout(function () { setCalDays([s], { price: el.value ? +el.value : null }).then(function (ok) { if (ok) toast(fmtD(s) + ' 요금 ' + (el.value ? won(+el.value) : '플랜 요금') + '으로'); }); }, 700);
+  });
+  document.querySelectorAll('.acal-tools [data-r]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var from = $('rFrom').value, to = $('rTo').value; if (!from || !to || to < from) { toast('기간을 먼저 골라 주세요'); return; }
+      var days = [], d = from; while (d <= to && days.length < 370) { days.push(d); d = addD(d, 1); }
+      var act = b.dataset.r, patch = act === 'price' ? { price: $('rPrice').value ? +$('rPrice').value : null } : { status: act, note: null };
+      setCalDays(days, patch).then(function (ok) { if (ok) toast(days.length + '일 적용했어요'); });
+    });
+  });
+
+  // ---- 플랜 ----
+  function renderPlansEdit() {
+    $('plansEdit').innerHTML = '<div class="pe head"><span>플랜</span><span>최대 인원</span><span>일~목 밤 (원)</span><span>금·토 밤 (원)</span><span>사용</span></div>' +
+      plans.map(function (p) {
+        return '<div class="pe" data-id="' + esc(p.id) + '"><b>' + esc(p.id) + '</b><input type="number" data-k="guests" value="' + p.guests + '" min="1" max="6"><input type="number" data-k="weekday_price" value="' + p.weekday_price + '" step="1000"><input type="number" data-k="weekend_price" value="' + p.weekend_price + '" step="1000"><input type="checkbox" data-k="active"' + (p.active !== false ? ' checked' : '') + '></div>';
+      }).join('');
+  }
+  $('plansSave').addEventListener('click', function () {
+    var rows = [].map.call(document.querySelectorAll('#plansEdit .pe[data-id]'), function (r) {
+      var g = function (k) { return r.querySelector('[data-k="' + k + '"]'); };
+      return { id: r.dataset.id, guests: +g('guests').value, weekday_price: +g('weekday_price').value, weekend_price: +g('weekend_price').value, active: g('active').checked };
+    });
+    sb.from('stay_plans').upsert(rows, { onConflict: 'id' }).then(function (r) { $('plansSaved').textContent = r.error ? '저장 실패: ' + r.error.message : '저장됨'; if (!r.error) { rows.forEach(function (n) { var p = plans.filter(function (q) { return q.id === n.id; })[0]; if (p) Object.assign(p, n); }); toast('플랜 요금을 저장했어요'); } });
+  });
 })();
 </script>
 </body>
